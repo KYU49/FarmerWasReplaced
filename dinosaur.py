@@ -1,61 +1,146 @@
+from Utils import move_to
 ws = get_world_size()
 dino_range = [0, 0, ws, ws]
-direction_to_dxy = {North: [0, 1], South: [0, -1], West: [-1, 0], East: [1, 0]}
+tail = []
+dir2dxy = {North: [0, 1], South: [0, -1], West: [-1, 0], East: [1, 0]}
+apple = [0, 0]
+length = 1
 
-# 1. 自分より2以上、下にある時、自分とりんごを繋ぐ閉路内に尻尾がなければ、直接行って良い(1歩下 → 横移動 → 下移動; ただし、自分が1番左にいるときは、右移動から始める)。
-# 2. 自分より1だけ下にある場合、ハミルトニアン閉路に従う
-# 3. 1, 2において、一番左の列にりんごがある場合は、りんごとの間の閉路に尻尾がなければ、閉路に従って、2列目まで移動、その後一番左の列に入る
-# 4. 自分より上にある時、閉路を進み、2列目に行った時に、1列目に尻尾がなければ、1列目に移動、その後閉路を進む。
-# 5. 同じ高さのときは無視
+# 1. 自分より下にある時、自分とりんごを繋ぐ閉路内に尻尾がなければ、直接行って良い(可能なら横移動、不可能なら下に1歩 → りんごの上まで移動 → 下移動; ただし、自分が1番左にいるときは、右移動から始める)。
+# 2. 1において、一番左の列にりんごがある場合は、りんごとの間の閉路に尻尾がなければ、閉路に従って、2列目まで移動、その後一番左の列に入る
+# 3. 自分より上にある時、閉路を進み、2列目に行った時に、1列目に尻尾がなければ、1列目に移動、その後閉路を進む。
+# 4. 同じ高さのときは無視
 
 def dinosaur():
-	i2xy, i2dir, xy2dir = get_hamiltonian_path()
-	change_hat(Hats.Dinosaur_Hat)
+	global i2xy
+	global xy2i
+	global i2dir
+	global xy2dir
+	i2xy, xy2i, i2dir, xy2dir = get_hamiltonian_path()
 	while True:
-		for dir in i2dir:
-			move(dir)
+		start_drone()
+
+def start_drone():
+	global tail
+	global apple
+	global length
+	move_to(0, 0)
+	tail = [[0, 0]]
+	index = 0
+	
+	change_hat(Hats.Dinosaur_Hat)
+	apple = measure()
+
+	shortcut = False
+
+	while True:
+		d = i2dir[index]
+		x = get_pos_x()
+		y = get_pos_y()
+		if not shortcut:
+			shortcut = not_tail_on_path(x, y, apple[0], apple[1])
+		else:
+			if y > apple[1]:
+				if x > apple[0]:
+					d = West
+				elif x < apple[0]:
+					d = East
+				else:
+					d = South
+				if not can_move(d):
+					d = South
+			elif y < apple[1]:
+				if x == 1:
+					d = West
+		move_result = move(d)
+		if not move_result:
+			change_hat(Hats.Brown_Hat)
+			return
+		x = get_pos_x()
+		y = get_pos_y()
+		index = xy2i[x][y]
+		tail.append([x, y])
+		if get_entity_type() == Entities.Apple:
+			apple = measure()
+			shortcut = False
+		else:
+			tail.pop(0)
+
+
+def not_tail_on_path(x, y, x_apple, y_apple):
+	dino_i = xy2i[x][y]
+	apple_i = xy2i[x_apple][y_apple]
+	if dino_i < apple_i:
+		for t in tail:
+			tail_i = xy2i[t[0]][t[1]]
+			if dino_i < tail_i and tail_i < apple_i:
+				return False
+	else:
+		for t in tail:
+			tail_i = xy2i[t[0]][t[1]]
+			if dino_i < tail_i or tail_i < apple_i:
+				return False 
+	return True
+
 
 def get_hamiltonian_path():
 	w = dino_range[2]
 	h = dino_range[3]
 	
-	xy_to_direction = []
-	index_to_xy = []
-	index_to_direction = []
+	xy2dir = []
+	xy2i = []
+	for i in range(ws):
+		xy2dir.append([])
+		xy2i.append([])
+		for j in range(ws):
+			xy2dir[i].append(None)
+			xy2i[i].append(0)
+	i2xy = []
+	i2dir = []
 	
-	first_col = []
-	for i in range(0, h - 1):
-		first_col.append(North)
-	first_col.append(East)
-	xy_to_direction.append(first_col)
-	
-	second_col = [West]
-	for i in range(1, h):
-		second_col.append([South, East][i % 2])
-	xy_to_direction.append(second_col)
-	
-	for _ in range(2, w - 1):
-		col = []
-		for i in range(0, h):
-			col.append([West, East][i % 2])
-		xy_to_direction.append(col)
-	
-	last_col = []
-	for i in range(0, h):
-		if i % 2 == 0:		
-			last_col.append(West)
-		else:
-			last_col.append(South)
-	xy_to_direction.append(last_col)
 	x = 0
-	y = 0
-	for i in range(w * h):
-		direction = xy_to_direction[x][y]
-		index_to_xy.append([x, y])
-		index_to_direction.append(direction)
-		x, y += direction_to_dxy[direction]
-	return index_to_xy, index_to_direction, xy_to_direction
-	
+	for y in range(ws - 1):
+		xy2dir[x][y] = North
+		xy2i[x][y] = len(i2xy)
+		i2xy.append([0, y])
+		i2dir.append(North)
+	for x in range(ws - 1):
+		xy2dir[x][ws - 1] = East
+		xy2i[x][ws - 1] = len(i2xy)
+		i2xy.append([x, ws - 1])
+		i2dir.append(East)
+	for y in range(ws - 2, 0, -2):
+		xy2dir[ws - 1][y + 1] = South
+		xy2i[ws - 1][y + 1] = len(i2xy)
+		i2xy.append([ws - 1, y + 1])
+		i2dir.append(South)
+		# ←
+		for x in range(ws - 1, 1, -1):
+			xy2dir[x][y] = West
+			xy2i[x][y] = len(i2xy)
+			i2xy.append([x, y])
+			i2dir.append(West)
+		xy2dir[1][y] = South
+		xy2i[1][y] = len(i2xy)
+		i2xy.append([1, y])
+		i2dir.append(South)
+		# →
+		for x in range(1, ws - 1):
+			xy2dir[x][y - 1] = East
+			xy2i[x][y - 1] = len(i2xy)
+			i2xy.append([x, y - 1])
+			i2dir.append(East)
+	xy2dir[ws - 1][1] = South
+	xy2i[ws - 1][1] = len(i2xy)
+	i2xy.append([ws - 1, 1])
+	i2dir.append(South)
+	for x in range(ws - 1, 0, -1):
+		xy2dir[x][0] = West
+		xy2i[x][0] = len(i2xy)
+		i2xy.append([x, 0])
+		i2dir.append(West)
+
+	return i2xy, xy2i, i2dir, xy2dir
 
 def main():
 	clear()
