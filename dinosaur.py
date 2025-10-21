@@ -8,7 +8,7 @@ length = 1
 
 # 1. 自分より下にある時、自分とりんごを繋ぐ閉路内に尻尾がなければ、直接行って良い(可能なら横移動、不可能なら下に1歩 → りんごの上まで移動 → 下移動; ただし、自分が1番左にいるときは、右移動から始める)。
 # 2. 1において、一番左の列にりんごがある場合は、りんごとの間の閉路に尻尾がなければ、閉路に従って、2列目まで移動、その後一番左の列に入る
-# 3. 自分より上にある時、閉路を進み、2列目に行った時に、1列目に尻尾がなければ、1列目に移動、その後閉路を進む。
+# 3. 自分より上にある時、閉路を進み、2列目に行った時に、1列目に尻尾がなければ、1列目に移動、その後閉路を進む。#TODO この時、すぐに左に進んでしまっても良い場合が多いため、その判定を考えること。
 # 4. 同じ高さのときは無視
 
 def dinosaur():
@@ -41,7 +41,7 @@ def start_drone():
 			shortcut = not_tail_on_path(x, y, apple[0], apple[1])
 		else:
 			if y > apple[1]:
-				if x > apple[0]:
+				if x > apple[0] and apple[0] > 0:
 					d = West
 				elif x < apple[0]:
 					d = East
@@ -67,7 +67,7 @@ def start_drone():
 			tail.pop(0)
 
 
-def not_tail_on_path(x, y, x_apple, y_apple):
+def not_tail_on_path(x, y, x_apple, y_apple):	# 特定の位置より前か後ろだけの尻尾だけ見れば良さそう。
 	dino_i = xy2i[x][y]
 	apple_i = xy2i[x_apple][y_apple]
 	if dino_i < apple_i:
