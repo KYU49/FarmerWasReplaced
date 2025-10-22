@@ -35,11 +35,11 @@ def start_drone():
 
 	while True:
 		d = i2dir[index]
-		x = get_pos_x()
-		y = get_pos_y()
-		if not shortcut:
-			shortcut = not_tail_on_path(x, y, apple[0], apple[1])
+		if shortcut > 0:
+			shortcut -= 1
 		else:
+			x = get_pos_x()
+			y = get_pos_y()
 			if y > apple[1]:
 				if x > apple[0] and apple[0] > 0:
 					d = West
@@ -68,10 +68,12 @@ def start_drone():
 		else:
 			tail.pop(0)
 
-# 自分とりんごを繋ぐハミルトニアン経路の上に、尻尾がないかを判定する。
+# 自分とりんごを繋ぐハミルトニアン経路の上に、尻尾がないかを判定し、残り何歩でハミルトニアン経路上からなくなるかを判定
+#FIXME ハミルトニアン経路上に存在する一番後ろの尻尾まででも良いか？
 def not_tail_on_path(x, y, x_apple, y_apple):
 	dino_i = xy2i[x][y]
 	apple_i = xy2i[x_apple][y_apple]
+	count = 0
 	# 自機と尻尾の該当位置までの距離と、尻尾の先端からの距離を比べ、該当位置までの距離の方が長かったら、移動後にその位置には決して尻尾がないため、経路上にあっても無視する。
 	if dino_i < apple_i:
 		for i in range(len(tail)):
@@ -79,15 +81,15 @@ def not_tail_on_path(x, y, x_apple, y_apple):
 			distance = abs(x - t[0]) + abs(y - t[1])
 			tail_i = xy2i[t[0]][t[1]]
 			if (dino_i < tail_i and tail_i < apple_i) and distance <= i:
-				return False
+				count = i
 	else:
 		for i in range(len(tail)):
 			t = tail[i]
 			distance = abs(x - t[0]) + abs(y - t[1])
 			tail_i = xy2i[t[0]][t[1]]
 			if (dino_i < tail_i or tail_i < apple_i) and distance <= i:
-				return False 
-	return True
+				count = i
+	return count
 
 
 def get_hamiltonian_path():
