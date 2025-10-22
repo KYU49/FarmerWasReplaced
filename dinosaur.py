@@ -50,7 +50,9 @@ def start_drone():
 				if not can_move(d):
 					d = South
 			elif y < apple[1]:
-				if x == 1:
+				if d == East and can_move(South):
+					d = South
+				elif x == 1:
 					d = West
 		move_result = move(d)
 		if not move_result:
@@ -62,23 +64,28 @@ def start_drone():
 		tail.append([x, y])
 		if get_entity_type() == Entities.Apple:
 			apple = measure()
-			shortcut = False
+			shortcut = not_tail_on_path(x, y, apple[0], apple[1])
 		else:
 			tail.pop(0)
 
-
-def not_tail_on_path(x, y, x_apple, y_apple):	# 特定の位置より前か後ろだけの尻尾だけ見れば良さそう。
+# 自分とりんごを繋ぐハミルトニアン経路の上に、尻尾がないかを判定する。
+def not_tail_on_path(x, y, x_apple, y_apple):
 	dino_i = xy2i[x][y]
 	apple_i = xy2i[x_apple][y_apple]
+	# 自機と尻尾の該当位置までの距離と、尻尾の先端からの距離を比べ、該当位置までの距離の方が長かったら、移動後にその位置には決して尻尾がないため、経路上にあっても無視する。
 	if dino_i < apple_i:
-		for t in tail:
+		for i in range(len(tail)):
+			t = tail[i]
+			distance = abs(x - t[0]) + abs(y - t[1])
 			tail_i = xy2i[t[0]][t[1]]
-			if dino_i < tail_i and tail_i < apple_i:
+			if (dino_i < tail_i and tail_i < apple_i) and distance <= i:
 				return False
 	else:
-		for t in tail:
+		for i in range(len(tail)):
+			t = tail[i]
+			distance = abs(x - t[0]) + abs(y - t[1])
 			tail_i = xy2i[t[0]][t[1]]
-			if dino_i < tail_i or tail_i < apple_i:
+			if (dino_i < tail_i or tail_i < apple_i) and distance <= i:
 				return False 
 	return True
 
