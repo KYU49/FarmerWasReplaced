@@ -15,6 +15,7 @@ def main():
 		gen_drone()
 		if num_items(Items.Power) < 100:
 			break
+		break
 	#farm.main()
 
 def gen_drone():
