@@ -19,6 +19,7 @@ def dinosaur():
 	i2xy, xy2i, i2dir, xy2dir = get_hamiltonian_path()
 	while True:
 		start_drone()
+		break
 
 def start_drone():
 	global tail
@@ -65,8 +66,8 @@ def start_drone():
 		if get_entity_type() == Entities.Apple:
 			apple = measure()
 			shortcut = not_tail_on_path(x, y, apple[0], apple[1])
-			# 後半は普通に進んだほうが早い
-			if len(tail) > 320:
+			# 一旦これにしてるけど、後半のアルゴリズムは修正の必要がある。
+			if len(tail) > 300:
 				shortcut = 1024
 		else:
 			tail.pop(0)
