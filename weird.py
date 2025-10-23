@@ -11,7 +11,9 @@ def main():
 		move(East)
 		spawn_drone(gen_drone)
 		move(North)
-		init()
+		#init()
+		substance = ws * 2 ** (num_unlocked(Unlocks.Mazes) - 1)
+		use_item(Items.Weird_Substance, substance)
 		gen_drone()
 		if num_items(Items.Power) < 100:
 			break
@@ -49,7 +51,6 @@ def init():
 				break
 	
 	plant(Entities.Bush)
-	use_item(Items.Weird_Substance, substance)
 
 if __name__ == "__main__":
 	main()
