@@ -11,14 +11,11 @@ def main():
 		move(East)
 		spawn_drone(gen_drone)
 		move(North)
-		#init()
-		substance = ws * 2 ** (num_unlocked(Unlocks.Mazes) - 1)
-		use_item(Items.Weird_Substance, substance)
+		init()
 		gen_drone()
-		if num_items(Items.Power) < 100:
+		if num_items(Items.Power) < -100:
 			break
-		break
-	#farm.main()
+	farm.main()
 
 def gen_drone():
 	do_a_flip()
@@ -48,9 +45,9 @@ def init():
 		while True:
 			if can_harvest():
 				harvest()
-				break
-	
+				break	
 	plant(Entities.Bush)
+	use_item(Items.Weird_Substance, substance)
 
 if __name__ == "__main__":
 	main()
