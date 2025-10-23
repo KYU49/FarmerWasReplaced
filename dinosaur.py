@@ -78,7 +78,7 @@ def not_tail_on_path(x, y, x_apple, y_apple):
 	dino_i = xy2i[x][y]
 	apple_i = xy2i[x_apple][y_apple]
 	count = 0
-	distance = abs(x - x_apple) + abs(y - y_apple)
+	distance = abs(x - tail[0][0]) + abs(y - tail[0][1])
 	# 自機と尻尾の該当位置までの距離と、尻尾の先端からの距離を比べ、該当位置までの距離の方が長かったら、移動後にその位置には決して尻尾がないため、経路上にあっても無視する。
 	if dino_i < apple_i:
 		for i in range(len(tail)):
