@@ -109,6 +109,7 @@ def cuctus(cr = None):
 		start_vert_swap()
 		wait_all_drones()
 		harvest()
+		break
 
 def wait_all_drones():
 	global drones

@@ -15,7 +15,7 @@ def main():
 		gen_drone()
 		if num_items(Items.Power) < 100:
 			break
-	farm.main()
+	#farm.main()
 
 def gen_drone():
 	do_a_flip()
